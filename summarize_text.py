@@ -1,6 +1,7 @@
 from gpt4all import GPT4All
-
-def chunk_text(text, max_chunk_size=1000):
+from docx import Document
+from transformers import pipeline, T5Tokenizer, T5Model
+def chunk_text(text, max_chunk_size=350):
     """
     Split text into chunks roughly max_chunk_size tokens (approx words here).
     This naive split just cuts by words.
@@ -13,7 +14,7 @@ def chunk_text(text, max_chunk_size=1000):
     return chunks
 
 
-def summarize_chunk(model, chunk, max_tokens=300):
+def summarize_chunk(model, chunk, max_tokens=1000):
     prompt = (
             "Please provide a concise summary of the following meeting transcript section:\n\n"
             + chunk
@@ -23,9 +24,9 @@ def summarize_chunk(model, chunk, max_tokens=300):
     return summary.strip()
 
 
-def summarize_long_transcript(transcript, model_path, chunk_size=1000, max_tokens=300):
+def summarize_long_transcript(transcript, model_path, chunk_size=1000, max_tokens=1000):
     # Load model
-    gptj = GPT4All(model_path)
+    gptj = GPT4All(model_name="DeepSeek-R1-Distill-Qwen-7B~Q4_0.gguf", model_path=model_path, allow_download=False)
 
     chunks = chunk_text(transcript, max_chunk_size=chunk_size)
     chunk_summaries = []
@@ -36,12 +37,35 @@ def summarize_long_transcript(transcript, model_path, chunk_size=1000, max_token
         chunk_summaries.append(summary)
 
     # Optionally combine all chunk summaries into a final summary
-    final_prompt = (
-            "The following are summaries of sections from a meeting transcript. "
-            "Please provide an overall concise summary of the entire meeting:\n\n"
-            + "\n\n".join(chunk_summaries)
-            + "\n\nFinal Summary:"
-    )
-    final_summary = gptj.generate(final_prompt, max_tokens=max_tokens)
+    # final_prompt = (
+    #         "The following are summaries of sections from a meeting transcript. "
+    #         "Please provide an overall concise summary of the entire meeting:\n\n"
+    #         + "\n\n".join(chunk_summaries)
+    #         + "\n\nFinal Summary:"
+    # )
+    # final_summary = gptj.generate(final_prompt, max_tokens=max_tokens)
 
-    return final_summary.strip(), chunk_summaries
+    return chunk_summaries
+
+def t5_small(input_text):
+    # Load the summarization pipeline using BART
+    summarizer = pipeline("summarization", model="t5-small")
+
+    # Example meeting transcript (shortened)
+    chunk_transcript = chunk_text(input_text)
+
+    chunk_summaries = []
+    # Run summarization
+    for transcript in chunk_transcript:
+        summary = summarizer(transcript, do_sample=False)
+        chunk_summaries.append(summary[0]['summary_text'])
+
+    return chunk_summaries
+
+def save_summary(filename, chunk_summaries):
+    doc = Document()
+    doc.add_heading("Meeting Summary", level=1)
+    for chunk in chunk_summaries:
+        doc.add_paragraph(chunk)
+    doc.save(filename)
+    print(f"Summary saved to {filename}")
