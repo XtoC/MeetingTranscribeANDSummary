@@ -1,9 +1,13 @@
 from faster_whisper import WhisperModel
 from docx import Document
 from gpt4all import GPT4All
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
-AUDIO_FILE = "./meeting_record.mp4"
-DOC_FILE = "./transcription.docx"
+MODEL_PATH = os.getenv('MODEL_PATH')
+AUDIO_FILE = os.getenv('AUDIO_FILE')
+DOC_FILE = os.getenv('DOC_FILE')
 
 def chunk_text(text, max_chunk_size=1000):
     """
