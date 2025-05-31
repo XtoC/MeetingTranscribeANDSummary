@@ -49,7 +49,7 @@ def summarize_long_transcript(transcript, model_path, chunk_size=1000, max_token
 
 def t5_small(input_text):
     # Load the summarization pipeline using BART
-    summarizer = pipeline("summarization", model="t5-small")
+    summarizer = pipeline("summarization", model="t5-base")
 
     # Example meeting transcript (shortened)
     chunk_transcript = chunk_text(input_text)
