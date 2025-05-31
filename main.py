@@ -3,7 +3,7 @@ from docx import Document
 from dotenv import load_dotenv
 import os
 from transcribe_audio import transcribe, save_transcript
-from summarize_text import t5_small, save_summary
+from summarize_text import t5_small, save_summary, bart
 load_dotenv()
 
 MODEL_PATH = os.getenv('MODEL_PATH')
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     transcript = read_docx(TRANSCRIPT_FILE)
     #print()
 
-    chunk_summaries = t5_small(transcript)
+    chunk_summaries = bart(transcript)
     save_summary(SUMMARY_FILE, chunk_summaries)
 
 

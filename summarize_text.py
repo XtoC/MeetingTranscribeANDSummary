@@ -47,12 +47,22 @@ def summarize_long_transcript(transcript, model_path, chunk_size=1000, max_token
 
     return chunk_summaries
 
+def bart(input_text):
+    summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+    chunk_transcript = chunk_text(input_text, 512)
+    chunk_summaries = []
+    for transcript in chunk_transcript:
+        summary = summarizer(transcript, max_length=160, min_length=60, do_sample=False)
+        chunk_summaries.append(summary[0]['summary_text'])
+
+    return chunk_summaries
+
 def t5_small(input_text):
     # Load the summarization pipeline using BART
     summarizer = pipeline("summarization", model="t5-base")
 
     # Example meeting transcript (shortened)
-    chunk_transcript = chunk_text(input_text)
+    chunk_transcript = chunk_text(input_text, 350)
 
     chunk_summaries = []
     # Run summarization
