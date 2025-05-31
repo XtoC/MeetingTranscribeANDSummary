@@ -20,16 +20,15 @@ def read_docx(file_path):
 
 if __name__ == "__main__":
 
-    # audio_model = WhisperModel("small", device="cpu", compute_type="int8")
-    #
-    #
-    # print("Model initialized")
-    # print("Transcripting...")
-    #
-    # segments = transcribe(AUDIO_FILE, audio_model)
-    # transcript = save_transcript(segments, TRANSCRIPT_FILE)
+    audio_model = WhisperModel("small", device="cpu", compute_type="int8")
+
+
+    print("Model initialized")
+    print("Transcripting...")
+
+    segments = transcribe(AUDIO_FILE, audio_model)
+    transcript = save_transcript(segments, TRANSCRIPT_FILE)
     transcript = read_docx(TRANSCRIPT_FILE)
-    #print()
 
     chunk_summaries = bart(transcript)
     save_summary(SUMMARY_FILE, chunk_summaries)

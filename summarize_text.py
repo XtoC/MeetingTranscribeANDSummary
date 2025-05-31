@@ -1,6 +1,11 @@
 from gpt4all import GPT4All
 from docx import Document
-from transformers import pipeline, T5Tokenizer, T5Model
+from transformers import pipeline
+from main import read_docx
+import os
+
+TRANSCRIPT_FILE = os.getenv('TRANSCRIPT_FILE')
+SUMMARY_FILE = os.getenv('SUMMARY_FILE')
 def chunk_text(text, max_chunk_size=350):
     """
     Split text into chunks roughly max_chunk_size tokens (approx words here).
@@ -79,3 +84,9 @@ def save_summary(filename, chunk_summaries):
         doc.add_paragraph(chunk)
     doc.save(filename)
     print(f"Summary saved to {filename}")
+
+if __name__ == "__main__":
+    transcript = read_docx(TRANSCRIPT_FILE)
+
+    chunk_summaries = bart(transcript)
+    save_summary(SUMMARY_FILE, chunk_summaries)
