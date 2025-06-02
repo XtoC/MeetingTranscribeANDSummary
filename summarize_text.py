@@ -1,11 +1,6 @@
 from gpt4all import GPT4All
 from docx import Document
 from transformers import pipeline
-from main import read_docx
-import os
-
-TRANSCRIPT_FILE = os.getenv('TRANSCRIPT_FILE')
-SUMMARY_FILE = os.getenv('SUMMARY_FILE')
 def chunk_text(text, max_chunk_size=350):
     """
     Split text into chunks roughly max_chunk_size tokens (approx words here).
@@ -52,27 +47,12 @@ def summarize_long_transcript(transcript, model_path, chunk_size=1000, max_token
 
     return chunk_summaries
 
-def bart(input_text):
-    summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-    chunk_transcript = chunk_text(input_text, 512)
+def summarize_by_model(input_text, model, chunk_max_token=512, max_length = 160, min_length=60):
+    summarizer = pipeline("summarization", model=model)
+    chunk_transcript = chunk_text(input_text, chunk_max_token)
     chunk_summaries = []
     for transcript in chunk_transcript:
-        summary = summarizer(transcript, max_length=160, min_length=60, do_sample=False)
-        chunk_summaries.append(summary[0]['summary_text'])
-
-    return chunk_summaries
-
-def t5_small(input_text):
-    # Load the summarization pipeline using BART
-    summarizer = pipeline("summarization", model="t5-base")
-
-    # Example meeting transcript (shortened)
-    chunk_transcript = chunk_text(input_text, 350)
-
-    chunk_summaries = []
-    # Run summarization
-    for transcript in chunk_transcript:
-        summary = summarizer(transcript, do_sample=False)
+        summary = summarizer(transcript, max_length=max_length, min_length=min_length, do_sample=False)
         chunk_summaries.append(summary[0]['summary_text'])
 
     return chunk_summaries
@@ -84,9 +64,3 @@ def save_summary(filename, chunk_summaries):
         doc.add_paragraph(chunk)
     doc.save(filename)
     print(f"Summary saved to {filename}")
-
-if __name__ == "__main__":
-    transcript = read_docx(TRANSCRIPT_FILE)
-
-    chunk_summaries = bart(transcript)
-    save_summary(SUMMARY_FILE, chunk_summaries)
